@@ -14,7 +14,7 @@ interface ContestPlayer {
   lastName: string;
   teamAbbr: string;
   salary: number;
-  projectedPoints: number;
+  primaryPosition: string;
 }
 
 async function getPlayerCosts(contestId: number): Promise<ContestPlayer[]> {
@@ -34,9 +34,10 @@ async function getPlayerCosts(contestId: number): Promise<ContestPlayer[]> {
     lastName: p.lastName,
     teamAbbr: p.teamAbbr,
     salary: p.salary,
-    projectedPoints: p.projectedPoints,
+    primaryPosition: p.primaryPosition,
   }));
 }
+
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const str = req.query.id as string;
 

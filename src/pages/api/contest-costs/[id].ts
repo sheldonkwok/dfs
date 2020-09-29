@@ -2,22 +2,15 @@ import { NextApiRequest, NextApiResponse } from "next";
 import got from "got";
 import * as qs from "querystring";
 
+import * as types from "@src/types";
+
 interface ContestPlayersResponse {
   players: {
-    result: ContestPlayer[];
+    result: types.ContestPlayer[];
   };
 }
 
-// This is just the desired subset
-interface ContestPlayer {
-  firstName: string;
-  lastName: string;
-  teamAbbr: string;
-  salary: number;
-  primaryPosition: string;
-}
-
-async function getPlayerCosts(contestId: number): Promise<ContestPlayer[]> {
+async function getPlayerCosts(contestId: number): Promise<types.ContestPlayer[]> {
   const query = qs.stringify({
     lang: "en-US",
     region: "US",

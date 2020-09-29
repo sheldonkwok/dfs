@@ -38,7 +38,7 @@ export default class App extends React.Component<IProps, IState> {
     const file = acceptedFiles[0];
     const text = await file.text();
 
-    const playerData = processor.convertCSV(text);
+    const playerData = processor.createRankings(text, this.state.playerCosts);
 
     this.setState({ ...this.state, playerData });
   }

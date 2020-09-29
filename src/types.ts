@@ -13,4 +13,6 @@ export interface RankingPlayer {
   teamAbbr: string;
   cost: number;
   projectedPoints: number;
+
+  pointsPerDollar: string;
 }

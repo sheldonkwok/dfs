@@ -23,10 +23,7 @@ export default function Table({ data }: TableParams) {
 
   // Use the state and functions returned from useTable to build your UI
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
-    {
-      columns,
-      data: React.useMemo(() => data, []),
-    },
+    { columns, data },
     useSortBy
   );
 

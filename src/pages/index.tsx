@@ -15,6 +15,8 @@ interface IState {
   playerCosts: Map<string, number>;
 }
 
+let DEFAULT_CONTEST_ID = 7418224;
+
 export default class App extends React.Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
@@ -35,12 +37,10 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   async onDrop(acceptedFiles: File[]): Promise<void> {
-    const file = acceptedFiles[0];
-    const text = await file.text();
-
-    const playerData = processor.createRankings(text, this.state.playerCosts);
-
-    this.setState({ ...this.state, playerData });
+    for (const file of acceptedFiles) {
+      const playerData = await processor.createRankings(file, this.state.playerCosts);
+      this.setState({ ...this.state, playerData: this.state.playerData.concat(playerData) });
+    }
   }
 
   render() {
@@ -55,13 +55,15 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   renderContestInput(): JSX.Element {
-    let contestID = 7354953;
-
     return (
-      <form onSubmit={(event) => this.onContestID(contestID, event)}>
+      <form onSubmit={(event) => this.onContestID(DEFAULT_CONTEST_ID, event)}>
         <label>
           Contest ID:
-          <input type="text" value={contestID} onChange={(e) => (contestID = Number(e.target.value))} />
+          <input
+            type="text"
+            value={DEFAULT_CONTEST_ID}
+            onChange={(e) => (DEFAULT_CONTEST_ID = Number(e.target.value))}
+          />
         </label>
         <input type="submit" value="Submit" />
       </form>

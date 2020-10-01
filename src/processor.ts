@@ -12,7 +12,13 @@ export function getPlayerCostMap(players: types.ContestPlayer[]): Map<string, nu
   }, new Map<string, number>());
 }
 
-export function createRankings(csv: string, playerCosts: Map<string, number>): types.RankingPlayer[] {
+export async function createRankings(
+  file: File,
+  playerCosts: Map<string, number>
+): Promise<types.RankingPlayer[]> {
+  const csv = await file.text();
+
+  const { position } = parseFilename(file.name);
   const lines = csv.trim().split("\n").slice(2);
 
   return lines
@@ -20,7 +26,6 @@ export function createRankings(csv: string, playerCosts: Map<string, number>): t
     .map((line) => {
       const columns = line.split(",");
       const name = clean(columns[3]);
-      const position = "RB";
       const teamAbbr = fixTeamName(clean(columns[4]));
 
       const key = getPlayerKey({ name, position, teamAbbr });
@@ -37,6 +42,19 @@ export function createRankings(csv: string, playerCosts: Map<string, number>): t
         pointsPerDollar,
       };
     });
+}
+
+interface ParseFilenameOutput {
+  week: number;
+  position: string;
+}
+
+function parseFilename(filename: string): ParseFilenameOutput {
+  const match = filename.match(/^FantasyPros_2020_Week_(\d+)_(\w+)_Rankings\.csv$/);
+  if (!match) throw new Error("Invalid csv filename");
+
+  const [_, week, position] = match;
+  return { week: Number(week), position };
 }
 
 function clean(csvStr: string): string {

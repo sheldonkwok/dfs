@@ -19,7 +19,7 @@ export async function createRankings(
   const csv = await file.text();
 
   const { position } = parseFilename(file.name);
-  const lines = csv.trim().split("\n").slice(2);
+  const lines = csv.trim().split("\n").slice(1);
 
   return lines
     .filter((line) => !line.startsWith('""'))

@@ -15,7 +15,7 @@ interface IState {
   playerCosts: Map<string, number>;
 }
 
-let DEFAULT_CONTEST_ID = 7465713;
+let DEFAULT_CONTEST_ID = 7511907;
 
 export default class App extends React.Component<IProps, IState> {
   constructor(props: IProps) {

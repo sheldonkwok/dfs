@@ -1,4 +1,8 @@
+import { kIsNormalizedAlready } from "got/dist/source";
 import * as types from "./types";
+
+
+const TEST_FIRST_NAME = ''; // Used to debug name mismatches
 
 export function getPlayerCostMap(players: types.ContestPlayer[]): Map<string, number> {
   return players.reduce((map, player) => {
@@ -7,6 +11,8 @@ export function getPlayerCostMap(players: types.ContestPlayer[]): Map<string, nu
       position: player.primaryPosition,
       teamAbbr: player.teamAbbr,
     });
+
+    if (player.firstName === TEST_FIRST_NAME) console.log('Yahoo:', key);
 
     return map.set(key, player.salary);
   }, new Map<string, number>());
@@ -25,12 +31,13 @@ export async function createRankings(
     .filter((line) => !line.startsWith('""'))
     .map((line) => {
       const columns = line.split(",");
-      const name = clean(columns[3]);
-      const teamAbbr = fixTeamName(clean(columns[4]));
+      const { name, teamAbbr } = parsePlayerTeam(clean(columns[1]));
 
       const key = getPlayerKey({ name, position, teamAbbr });
+      if (name.startsWith(TEST_FIRST_NAME)) console.log('FP:', key);
+
       const cost = Number(playerCosts.get(key) || 0);
-      const projectedPoints = Number(clean(columns[10]));
+      const projectedPoints = Number(clean(columns[5]));
       const pointsPerDollar = (projectedPoints / cost).toFixed(3);
 
       return {
@@ -42,6 +49,17 @@ export async function createRankings(
         pointsPerDollar,
       };
     });
+}
+
+export interface PlayerTeam {
+  name: string;
+  teamAbbr: string;
+}
+
+function parsePlayerTeam(playerTeamStr: string): PlayerTeam {
+  const match = playerTeamStr.match(/(.*) \((\w+)\)/);
+  const [_, name, teamAbbr] = match;
+  return { name, teamAbbr};
 }
 
 interface ParseFilenameOutput {
@@ -68,7 +86,8 @@ interface PlayerKeyInput {
 }
 
 function getPlayerKey({ name, position, teamAbbr }: PlayerKeyInput): string {
-  return [position, teamAbbr, name].join("-");
+  const team = fixTeamName(teamAbbr)
+  return [position, team, name].join("-");
 }
 
 function fixTeamName(badTeam: string): string {

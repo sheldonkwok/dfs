@@ -23,7 +23,7 @@ async function getPlayerCosts(contestId: number): Promise<types.ContestPlayer[]>
   );
 
   return data.body.players.result.map((p) => ({
-    firstName: p.firstName,
+    firstName: fixFirstName(p.firstName),
     lastName: p.lastName,
     teamAbbr: p.teamAbbr,
     salary: p.salary,
@@ -41,3 +41,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
   res.json({ playerCosts });
 };
+
+
+function fixFirstName(name: string): string {
+  if (name === 'DJ') return 'D.J.'
+
+  return name;
+}

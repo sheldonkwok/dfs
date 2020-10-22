@@ -13,6 +13,7 @@ export const COLUMNS = {
     { Header: "Position", accessor: "position" },
     { Header: "Name", accessor: "name" },
     { Header: "Cost", accessor: "cost" },
+    { Header: "Matchup Rating", accessor: "matchupRating" },
     { Header: "Projected Points", accessor: "projectedPoints" },
     { Header: "Points per Dollar", accessor: "pointsPerDollar" },
   ],

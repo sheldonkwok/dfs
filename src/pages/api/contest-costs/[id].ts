@@ -42,9 +42,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   res.json({ playerCosts });
 };
 
-
 function fixFirstName(name: string): string {
-  if (name === 'DJ') return 'D.J.'
+  if (name === "DJ") return "D.J.";
+  if (name === "DK") return "D.K.";
 
   return name;
 }

@@ -24,7 +24,7 @@ async function getPlayerCosts(contestId: number): Promise<types.ContestPlayer[]>
 
   return data.body.players.result.map((p) => ({
     firstName: fixFirstName(p.firstName),
-    lastName: p.lastName,
+    lastName: fixLastName(p.lastName),
     teamAbbr: p.teamAbbr,
     salary: p.salary,
     primaryPosition: p.primaryPosition,
@@ -45,6 +45,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 function fixFirstName(name: string): string {
   if (name === "DJ") return "D.J.";
   if (name === "DK") return "D.K.";
+
+  return name;
+}
+
+function fixLastName(name: string): string {
+  if (name === "Mahomes") return "Mahomes II";
 
   return name;
 }

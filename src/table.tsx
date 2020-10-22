@@ -12,10 +12,10 @@ export const COLUMNS = {
   columns: [
     { Header: "Position", accessor: "position" },
     { Header: "Name", accessor: "name" },
-    { Header: "Cost", accessor: "cost" },
-    { Header: "Matchup Rating", accessor: "matchupRating" },
-    { Header: "Projected Points", accessor: "projectedPoints" },
-    { Header: "Points per Dollar", accessor: "pointsPerDollar" },
+    { Header: "Cost", accessor: "cost", sortDescFirst: true },
+    { Header: "Matchup Rating", accessor: "matchupRating", sortDescFirst: true },
+    { Header: "Projected Points", accessor: "projectedPoints", sortDescFirst: true },
+    { Header: "Points per Dollar", accessor: "pointsPerDollar", sortDescFirst: true },
   ],
 };
 
@@ -35,7 +35,9 @@ export default function Table({ data }: TableParams) {
         {headerGroups.map((headerGroup) => (
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map((column) => (
-              <th {...column.getHeaderProps(column.getSortByToggleProps())}>{column.render("Header")}</th>
+              <th {...column.getHeaderProps(column.getSortByToggleProps())} style={{ padding: "5px 10px" }}>
+                {column.render("Header")}
+              </th>
             ))}
           </tr>
         ))}
@@ -44,7 +46,7 @@ export default function Table({ data }: TableParams) {
         {rows.map((row, i) => {
           prepareRow(row);
           return (
-            <tr {...row.getRowProps()}>
+            <tr {...row.getRowProps()} style={{ textAlign: "center" }}>
               {row.cells.map((cell) => {
                 return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>;
               })}

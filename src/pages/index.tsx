@@ -1,4 +1,4 @@
-import React, { ContextType, useState } from "react";
+import React, { ContextType, useRef } from "react";
 import Dropzone from "react-dropzone";
 
 import * as types from "@src/types";
@@ -6,51 +6,68 @@ import * as processor from "@src/processor";
 
 import Table from "@src/table";
 
-interface IProps {}
-
-interface IState {
-  contestID?: number;
-
-  playerData: types.RankingPlayer[];
-  playerCosts: Map<string, number>;
-}
-
 const DEFAULT_CONTEST_ID = 7542354;
 
 interface ContestInputProps {
-  onContestID: Function;
+  onContestID: (contestID: number) => Promise<void>;
 }
 
 function ContestInput({ onContestID }: ContestInputProps): JSX.Element {
-  const [contestID, setContestID] = useState(DEFAULT_CONTEST_ID);
+  const ref = useRef<HTMLInputElement>(null);
 
   return (
-    <form onSubmit={(event) => {
-      event.preventDefault();
-      onContestID(contestID);
-    }}>
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        onContestID(Number(ref.current.value));
+      }}
+    >
       <label>
         Contest ID:
-        <input
-          type="text"
-          value={contestID}
-          onChange={(e) => setContestID(Number(e.target.value))}
-        />
+        <input ref={ref} type="text" defaultValue={DEFAULT_CONTEST_ID} />
       </label>
       <input type="submit" value="Submit" />
     </form>
   );
 }
 
-export default class App extends React.Component<IProps, IState> {
-  constructor(props: IProps) {
+interface FileInputProps {
+  onFilesInput: (files: File[]) => Promise<void>;
+}
+
+function FileInput({ onFilesInput }: FileInputProps): JSX.Element {
+  return (
+    <Dropzone onDrop={(acceptedFiles) => onFilesInput(acceptedFiles)}>
+      {({ getRootProps, getInputProps }) => (
+        <div>
+          <div {...getRootProps()}>
+            <input {...getInputProps()} />
+            <p>Drop Fantasy Pros Superflex csv here</p>
+          </div>
+        </div>
+      )}
+    </Dropzone>
+  );
+}
+
+interface AppProps {}
+
+interface AppState {
+  contestID?: number;
+
+  playerData: types.RankingPlayer[];
+  playerCosts: Map<string, number>;
+}
+
+export default class App extends React.Component<AppProps, AppState> {
+  constructor(props: AppProps) {
     super(props);
 
     this.state = { contestID: undefined, playerData: [], playerCosts: new Map<string, number>() };
   }
 
   async onContestID(contestID: number) {
-    this.setState({ ...this.state, contestID})
+    this.setState({ ...this.state, contestID });
 
     const req = await fetch(`/api/contest-costs/${contestID}`);
     const data = await req.json();
@@ -71,24 +88,9 @@ export default class App extends React.Component<IProps, IState> {
 
     return (
       <div>
-        {this.renderFileInput()}
+        <FileInput onFilesInput={this.onDrop.bind(this)}></FileInput>
         {this.state.playerData.length > 1 ? <Table data={this.state.playerData}></Table> : <div></div>}
       </div>
-    );
-  }
-
-  renderFileInput(): JSX.Element {
-    return (
-      <Dropzone onDrop={(acceptedFiles) => this.onDrop(acceptedFiles)}>
-        {({ getRootProps, getInputProps }) => (
-          <div>
-            <div {...getRootProps()}>
-              <input {...getInputProps()} />
-              <p>Drop Fantasy Pros Superflex csv here</p>
-            </div>
-          </div>
-        )}
-      </Dropzone>
     );
   }
 }

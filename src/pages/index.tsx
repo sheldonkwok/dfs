@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ContextType, useState } from "react";
 import Dropzone from "react-dropzone";
 
 import * as types from "@src/types";
@@ -15,7 +15,32 @@ interface IState {
   playerCosts: Map<string, number>;
 }
 
-let DEFAULT_CONTEST_ID = 7542354;
+const DEFAULT_CONTEST_ID = 7542354;
+
+interface ContestInputProps {
+  onContestID: Function;
+}
+
+function ContestInput({ onContestID }: ContestInputProps): JSX.Element {
+  const [contestID, setContestID] = useState(DEFAULT_CONTEST_ID);
+
+  return (
+    <form onSubmit={(event) => {
+      event.preventDefault();
+      onContestID(contestID);
+    }}>
+      <label>
+        Contest ID:
+        <input
+          type="text"
+          value={contestID}
+          onChange={(e) => setContestID(Number(e.target.value))}
+        />
+      </label>
+      <input type="submit" value="Submit" />
+    </form>
+  );
+}
 
 export default class App extends React.Component<IProps, IState> {
   constructor(props: IProps) {
@@ -24,10 +49,8 @@ export default class App extends React.Component<IProps, IState> {
     this.state = { contestID: undefined, playerData: [], playerCosts: new Map<string, number>() };
   }
 
-  async onContestID(contestID: number, event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    this.setState({ ...this.state, contestID });
+  async onContestID(contestID: number) {
+    this.setState({ ...this.state, contestID})
 
     const req = await fetch(`/api/contest-costs/${contestID}`);
     const data = await req.json();
@@ -44,29 +67,13 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   render() {
-    if (!this.state.contestID) return this.renderContestInput();
+    if (!this.state.contestID) return <ContestInput onContestID={this.onContestID.bind(this)}></ContestInput>;
 
     return (
       <div>
         {this.renderFileInput()}
         {this.state.playerData.length > 1 ? <Table data={this.state.playerData}></Table> : <div></div>}
       </div>
-    );
-  }
-
-  renderContestInput(): JSX.Element {
-    return (
-      <form onSubmit={(event) => this.onContestID(DEFAULT_CONTEST_ID, event)}>
-        <label>
-          Contest ID:
-          <input
-            type="text"
-            value={DEFAULT_CONTEST_ID}
-            onChange={(e) => (DEFAULT_CONTEST_ID = Number(e.target.value))}
-          />
-        </label>
-        <input type="submit" value="Submit" />
-      </form>
     );
   }
 

@@ -1,26 +1,20 @@
-import { kIsNormalizedAlready } from "got/dist/source";
-import * as types from "./types";
+import * as utils from "./utils";
 
-const TEST_FIRST_NAME = ""; // Used to debug name mismatches
+export interface RankingPlayer {
+  position: string;
+  name: string;
+  teamAbbr: string;
+  cost: number;
+  matchupRating: number;
+  projectedPoints: number;
 
-export function getPlayerCostMap(players: types.ContestPlayer[]): Map<string, number> {
-  return players.reduce((map, player) => {
-    const key = getPlayerKey({
-      name: `${player.firstName} ${player.lastName}`,
-      position: player.primaryPosition,
-      teamAbbr: player.teamAbbr,
-    });
-
-    if (player.firstName === TEST_FIRST_NAME) console.log("Yahoo:", key);
-
-    return map.set(key, player.salary);
-  }, new Map<string, number>());
+  pointsPerDollar: string;
 }
 
 export async function createRankings(
   file: File,
-  playerCosts: Map<string, number>
-): Promise<types.RankingPlayer[]> {
+  playerCosts: Record<string, number>
+): Promise<RankingPlayer[]> {
   const csv = await file.text();
 
   const { position } = parseFilename(file.name);
@@ -33,16 +27,16 @@ export async function createRankings(
   return lines.map((line) => parseLine(line, position, playerCosts));
 }
 
-function parseLine(line: string, position: string, playerCosts: Map<string, number>): types.RankingPlayer {
+function parseLine(line: string, position: string, playerCosts: Record<string, number>): RankingPlayer {
   const columns = line.split(",");
 
   const name = clean(columns[1]);
   const teamAbbr = clean(columns[2]);
 
-  const key = getPlayerKey({ name, position, teamAbbr });
-  if (TEST_FIRST_NAME && name.startsWith(TEST_FIRST_NAME)) console.log("FP:", key);
+  const key = utils.getPlayerKey({ name, position, teamAbbr });
+  if (utils.TEST_FIRST_NAME && name.startsWith(utils.TEST_FIRST_NAME)) console.log("FP:", key);
 
-  const cost = Number(playerCosts.get(key) ?? 0);
+  const cost = Number(playerCosts[key] ?? 0);
   const projectedPoints = Number(clean(columns[6]));
   const pointsPerDollar = (projectedPoints / cost).toFixed(3);
   const matchupRating = Number(clean(columns[4]));
@@ -73,20 +67,4 @@ function parseFilename(filename: string): ParseFilenameOutput {
 
 function clean(csvStr: string): string {
   return csvStr.trim().replace(/"/g, "").trim();
-}
-
-interface PlayerKeyInput {
-  name: string;
-  position: string;
-  teamAbbr: string;
-}
-
-function getPlayerKey({ name, position, teamAbbr }: PlayerKeyInput): string {
-  const team = fixTeamName(teamAbbr);
-  return [position, team, name].join("-");
-}
-
-function fixTeamName(badTeam: string): string {
-  if (badTeam === "JAC") return "JAX";
-  return badTeam;
 }

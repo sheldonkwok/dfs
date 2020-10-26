@@ -1,10 +1,10 @@
 import React from "react";
 import { useTable, useSortBy } from "react-table";
 
-import * as types from "@src/types";
+import { RankingPlayer } from './processor';
 
 export interface TableParams {
-  data: types.RankingPlayer[];
+  data: RankingPlayer[];
 }
 
 export const COLUMNS = {

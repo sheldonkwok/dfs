@@ -5,6 +5,7 @@ import * as utils from "./utils";
 
 // This is just the desired subset of Yahoo results
 export interface ContestPlayer {
+  code: string;
   firstName: string;
   lastName: string;
   teamAbbr: string;
@@ -51,12 +52,20 @@ async function getContestPlayers(contestID: string): Promise<ContestPlayer[]> {
   );
 
   return data.body.players.result.map((p) => ({
+    code: parseID(p.code),
     firstName: fixFirstName(p.firstName),
     lastName: fixLastName(p.lastName),
     teamAbbr: p.teamAbbr,
     salary: p.salary,
     primaryPosition: p.primaryPosition,
   }));
+}
+
+function parseID(code: string): string {
+  const match = code.match(/^nfl\.p\.(\d+)$/);
+  if (!match) return code;
+
+  return match[1];
 }
 
 function fixFirstName(name: string): string {

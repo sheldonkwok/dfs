@@ -1,7 +1,7 @@
 import React, { ContextType, useRef } from "react";
 import { useRouter } from "next/router";
 
-const DEFAULT_CONTEST_ID = 7542354;
+const DEFAULT_CONTEST_ID = 7577233;
 
 export default function ContestInput(): JSX.Element {
   const ref = useRef<HTMLInputElement>(null);

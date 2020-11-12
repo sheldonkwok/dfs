@@ -13,7 +13,12 @@ export interface ContestPlayer {
   primaryPosition: string;
 }
 
+const COSTS_CACHE = new Map<string, Record<string, number>>();
+
 export async function getPlayerCosts(contestID: string): Promise<Record<string, number>> {
+  const cached = COSTS_CACHE.get(contestID);
+  if (cached) return cached;
+
   const players = await getContestPlayers(contestID);
 
   const playerCosts: Record<string, number> = {};
@@ -29,6 +34,8 @@ export async function getPlayerCosts(contestID: string): Promise<Record<string, 
 
     playerCosts[key] = player.salary;
   }
+
+  COSTS_CACHE.set(contestID, playerCosts);
 
   return playerCosts;
 }

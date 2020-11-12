@@ -1,20 +1,20 @@
 import React from "react";
 import { useTable, useSortBy } from "react-table";
 
-import { RankingPlayer } from './processor';
+import { Player } from "@src/processor";
 
 export interface TableParams {
-  data: RankingPlayer[];
+  data: Player[];
 }
 
 export const COLUMNS = {
   Header: "Ranks",
   columns: [
-    { Header: "Position", accessor: "position" },
+    { Header: "Position", accessor: "primaryPosition" },
     { Header: "Name", accessor: "name" },
-    { Header: "Cost", accessor: "cost", sortDescFirst: true },
-    { Header: "Matchup Rating", accessor: "matchupRating", sortDescFirst: true },
-    { Header: "Projected Points", accessor: "projectedPoints", sortDescFirst: true },
+    { Header: "Cost", accessor: "salary", sortDescFirst: true },
+    // { Header: "Matchup Rating", accessor: "matchupRating", sortDescFirst: true },
+    { Header: "Projected Points", accessor: "points", sortDescFirst: true },
     { Header: "Points per Dollar", accessor: "pointsPerDollar", sortDescFirst: true },
   ],
 };

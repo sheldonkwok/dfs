@@ -1,70 +1,32 @@
-import * as utils from "./utils";
+import lodash from "lodash";
 
-export interface RankingPlayer {
-  position: string;
+import * as yahoo from "@src/yahoo";
+import * as fp from "@src/fp";
+
+export interface Player extends yahoo.ContestPlayer {
   name: string;
-  teamAbbr: string;
-  cost: number;
-  matchupRating: number;
-  projectedPoints: number;
-
+  points: number;
   pointsPerDollar: string;
 }
 
-export async function createRankings(
-  file: File,
-  playerCosts: Record<string, number>
-): Promise<RankingPlayer[]> {
-  const csv = await file.text();
+export async function getRankingPlayers(contestID: string, week: number): Promise<Player[]> {
+  const players = await yahoo.getContestPlayers(contestID);
+  const playerPoints = await fp.getProjectedPoints(week, "WR");
 
-  const { position } = parseFilename(file.name);
-  const lines = csv
-    .trim()
-    .split("\n")
-    .slice(1)
-    .filter((line) => !line.startsWith('""'));
+  const rankingPlayers = lodash(players)
+    .filter((p) => !!playerPoints.get(p.code))
+    .map((p) => {
+      const points = playerPoints.get(p.code) || 0;
+      const pointsPerDollar = (points / p.salary).toFixed(3);
 
-  return lines.map((line) => parseLine(line, position, playerCosts));
-}
+      return {
+        ...p,
+        name: `${p.firstName} ${p.lastName}`,
+        points,
+        pointsPerDollar,
+      };
+    })
+    .value();
 
-function parseLine(line: string, position: string, playerCosts: Record<string, number>): RankingPlayer {
-  const columns = line.split(",");
-
-  const name = clean(columns[1]);
-  const teamAbbr = clean(columns[2]);
-
-  const key = utils.getPlayerKey({ name, position, teamAbbr });
-  if (utils.TEST_FIRST_NAME && name.startsWith(utils.TEST_FIRST_NAME)) console.log("FP:", key);
-
-  const cost = Number(playerCosts[key] ?? 0);
-  const projectedPoints = Number(clean(columns[6]));
-  const pointsPerDollar = (projectedPoints / cost).toFixed(3);
-  const matchupRating = Number(clean(columns[4]));
-
-  return {
-    position,
-    name,
-    teamAbbr,
-    cost,
-    matchupRating,
-    projectedPoints,
-    pointsPerDollar,
-  };
-}
-
-interface ParseFilenameOutput {
-  week: number;
-  position: string;
-}
-
-function parseFilename(filename: string): ParseFilenameOutput {
-  const match = filename.match(/^FantasyPros_2020_Week_(\d+)_(\w+)_Rankings\.csv$/);
-  if (!match) throw new Error("Invalid csv filename");
-
-  const [_, week, position] = match;
-  return { week: Number(week), position };
-}
-
-function clean(csvStr: string): string {
-  return csvStr.trim().replace(/"/g, "").trim();
+  return rankingPlayers;
 }

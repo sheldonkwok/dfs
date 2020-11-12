@@ -1,8 +1,6 @@
 import got from "got";
 import * as qs from "querystring";
 
-import * as utils from "./utils";
-
 // This is just the desired subset of Yahoo results
 export interface ContestPlayer {
   code: string;
@@ -13,32 +11,7 @@ export interface ContestPlayer {
   primaryPosition: string;
 }
 
-const COSTS_CACHE = new Map<string, Record<string, number>>();
-
-export async function getPlayerCosts(contestID: string): Promise<Record<string, number>> {
-  const cached = COSTS_CACHE.get(contestID);
-  if (cached) return cached;
-
-  const players = await getContestPlayers(contestID);
-
-  const playerCosts: Record<string, number> = {};
-
-  for (const player of players) {
-    const key = utils.getPlayerKey({
-      name: `${player.firstName} ${player.lastName}`,
-      position: player.primaryPosition,
-      teamAbbr: player.teamAbbr,
-    });
-
-    if (player.firstName === utils.TEST_FIRST_NAME) console.log("Yahoo:", key);
-
-    playerCosts[key] = player.salary;
-  }
-
-  COSTS_CACHE.set(contestID, playerCosts);
-
-  return playerCosts;
-}
+const CACHE = new Map<string, ContestPlayer[]>();
 
 interface ContestPlayersResponse {
   players: {
@@ -46,7 +19,10 @@ interface ContestPlayersResponse {
   };
 }
 
-async function getContestPlayers(contestID: string): Promise<ContestPlayer[]> {
+export async function getContestPlayers(contestID: string): Promise<ContestPlayer[]> {
+  const cached = CACHE.get(contestID);
+  if (cached) return cached;
+
   const query = qs.stringify({
     lang: "en-US",
     region: "US",
@@ -58,7 +34,7 @@ async function getContestPlayers(contestID: string): Promise<ContestPlayer[]> {
     { responseType: "json" }
   );
 
-  return data.body.players.result.map((p) => ({
+  const players = data.body.players.result.map((p) => ({
     code: parseID(p.code),
     firstName: fixFirstName(p.firstName),
     lastName: fixLastName(p.lastName),
@@ -66,6 +42,9 @@ async function getContestPlayers(contestID: string): Promise<ContestPlayer[]> {
     salary: p.salary,
     primaryPosition: p.primaryPosition,
   }));
+
+  CACHE.set(contestID, players);
+  return players;
 }
 
 function parseID(code: string): string {
